@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      id="viewport-meta"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no"
+    />
+    <title>Message Real-Time</title>
+    <style>
+      body {
+        width: 100vw;
+        background-color: lightblue;
+        font-family: Arial, sans-serif;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+      }
+      #response {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        position: fixed;
+        bottom: 2%;
+        right: 0;
+        width: 100%;
+      }
+      #messages {
+        padding: 0 5%;
+      }
+      #sendMessage {
+        padding: 7px 10px;
+        width: 100%;
+        min-width: 270px;
+        background-color: #fff;
+        outline: none;
+        border: 0;
+        font-size: 1.2rem;
+        border-radius: 5px;
+      }
+      #messages:nth-child(even) p>span{
+        color: red !important;
+      }
+      #messages:nth-child(odd) p>span{
+        color: black !important;
+      }
+      button {
+        background-color: #43b891;
+        outline: none;
+        border: 0;
+        padding: 7px 10px;
+        font-size: 1.2rem;
+        font-weight: 800;
+        color: #000;
+        border-radius: 0 5px 5px 0;
+      }
+    </style>
+  </head>
+  <body>
+    <h3 style="text-align: center">Real-Time Messaging</h3>
+    <hr style="width: 95%" />
+    <form id="messageForm">
+      <div id="response">
+        <div>
+          <input
+            type="text"
+            id="sendMessage"
+            placeholder="Type your message"
+            autofocus
+          />
+        </div>
+        <div><button type="submit">Send</button></div>
+      </div>
+    </form>
+    <div id="messages"></div>
+
+    <script>
+      window.addEventListener("beforeunload", function (e) {
+        var confirmationMessage = "Are you sure you want to leave?";
+        (e || window.event).returnValue = confirmationMessage;
+        return confirmationMessage;
+      });
+
+      const socket = new WebSocket("ws://192.168.0.101:8080");
+
+      socket.onmessage = function (event) {
+        const messagesDiv = document.getElementById("messages");
+        messagesDiv.innerHTML += "<p>" + event.data + "</p>";
+      };
+
+      document
+        .getElementById("messageForm")
+        .addEventListener("submit", function (event) {
+          event.preventDefault();
+          const input = document.getElementById("sendMessage");
+          const message = input.value;
+          if (message) {
+            socket.send(message);
+            input.value = "";
+          }
+        });
+
+      socket.onopen = function () {
+        console.log("Connected to WebSocket server!");
+      };
+
+      socket.onerror = function (error) {
+        console.log("WebSocket Error: " + error);
+      };
+    </script>
+</body>
+</html>
